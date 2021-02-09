@@ -2,13 +2,14 @@
   "name": "bazbotty",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "./src/index.js",
   "dependencies": {
     "dotenv": "^8.2.0",
-    "twitch": "^4.4.8",
-    "twitch-auth": "^4.4.8",
-    "twitch-chat-client": "^4.4.7",
-    "twitch-pubsub-client": "^4.4.8"
+    "express": "^4.17.1",
+    "twitch": "^4.4.9",
+    "twitch-auth": "^4.4.9",
+    "twitch-chat-client": "^4.4.9",
+    "twitch-pubsub-client": "^4.4.9"
   },
   "devDependencies": {},
   "scripts": {
