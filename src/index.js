@@ -3,25 +3,30 @@ const { ChatClient } = require('twitch-chat-client');
 const { RefreshableAuthProvider, StaticAuthProvider } = require('twitch-auth');
 const { PubSubClient } = require('twitch-pubsub-client');
 const fs = require('fs').promises;
-const app = require('express')();
+const express = require('express');
+const app = express();
 
 const SAVE_FILE = './src/data/tokens.json';
 
 let botAPIClient;
 let userAPIClient;
-let chatClient;
+let channels = ['justcallmebaz_'];
 let pubSubClient;
+
+
 
 //TODO: Clip hotkey, chat box on screen, pubsub, other commands
 //WANT_TODO: Refresh authentication n shit
 
 let scope = ['chat:read', 'chat:edit', 'channel:moderate', 'analytics:read:extensions', 'analytics:read:games', 'bits:read', 'channel:edit:commercial', 'channel:manage:broadcast', 'channel:manage:extensions', 'channel:manage:redemptions', 'channel:manage:videos', 'channel:read:editors', 'channel:read:hype_train', 'channel:read:redemptions', 'channel:read:stream_key', 'channel:read:subscriptions', 'clips:edit', 'moderation:read', 'user:edit', 'user:edit:follows', 'user:read:blocked_users', 'user:manage:blocked_users', 'user:read:broadcast', 'user:read:email', 'whispers:read', 'whispers:edit'];
 
-app.get('/login', (req, res) => {
-    res.redirect('https://id.twitch.tv/oauth2/authorize?client_id=tbypuo33r1kyw15ohut7f4rqhkht2a&redirect_uri=http://localhost:8080&response_type=code&scope=chat:read%20chat:edit%20channel:moderate%20analytics:read:extensions%20analytics:read:games%20bits:read%20channel:edit:commercial%20channel:manage:broadcast%20channel:manage:extensions%20channel:manage:redemptions%20channel:manage:videos%20channel:read:editors%20channel:read:hype_train%20channel:read:redemptions%20channel:read:stream_key%20channel:read:subscriptions%20clips:edit%20moderation:read%20user:edit%20user:edit:follows%20user:read:blocked_users%20user:manage:blocked_users%20user:read:broadcast%20user:read:email%20whispers:read%20whispers:edit');
-});
-
 app.listen(8080);
+
+//app.use('/', app.static(express.path.join(__dirname, 'static')));
+
+app.get('/', (req, res) => {
+    res.sendFile()
+});
 
 
 async function startup() {
@@ -40,27 +45,33 @@ async function startup() {
     //Creating both the API Clients and Chat Clients
     botAPIClient = new ApiClient({ authProvider: botAuthProvider });
     userAPIClient = new ApiClient({ authProvider: userAuthProvider });
-    chatClient = new ChatClient(botAPIClient, { channels: ['justcallmebaz_'] });
+    let chatClient = new ChatClient(botAPIClient, { channels });
 
 
     await chatClient.connect().then(await sleep(1000));
 
     //await chatClient.host(channelID, 'turntmosfet');
 
-    
-    createPubSubListeners();
+    let channelID = await pubSubClient.registerUserListener(userAPIClient);
+
+    await pubSubClient.onRedemption(channelID, (message) => {
+        chatClient.say(channels[0], 'PogU');
+        console.log(message.id);
+    });
+
+    //createPubSubListeners();
 }
 
 //Set up listeners to listen to PubSub events
-async function createPubSubListeners() {
-    //Getting the numerical ID for the user (streamer) channel
-    let channelID = await pubSubClient.registerUserListener(userAPIClient);
+// async function createPubSubListeners() {
+//     //Getting the numerical ID for the user (streamer) channel
+//     let channelID = await pubSubClient.registerUserListener(userAPIClient);
 
     
-    await pubSubClient.onRedemption(channelID, (message) => {
-        console.log(message.rewardName);
-    });
-}
+//     await pubSubClient.onRedemption(channelID, (message) => {
+//         console.log(message.rewardName);
+//     });
+// }
 
 startup();
 
